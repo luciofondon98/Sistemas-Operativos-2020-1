@@ -10,7 +10,7 @@
 void crearLibros(){	
 	srand(time(NULL));
 
-	for (int i = 0; i < 10; i++){
+	for (int i = 0; i < 15; i++){
 		mkdir("libros",0700);
 		char dirLibro[] = "libros/";
 		char nombre_libro[20],autor[50],categoria[50], calificacion[5];
@@ -18,10 +18,10 @@ void crearLibros(){
 		FILE *libro;
 		sprintf(nombre_libro,"%slibro %d.txt",dirLibro,i);
 
-		autor_int = (rand() % 20);
+		autor_int = (rand() % 5);
 		fecha = (rand() % 30)+1990; // año aleatorio entre 1990 - 2020
 		nota = (rand() % 10);
-		categoria_int = (rand() % 10);
+		categoria_int = (rand() % 3);
 		sprintf(autor,"autor %d",autor_int);
 		sprintf(calificacion,"%d/10",nota);
 		sprintf(categoria,"categoria %d",categoria_int);
@@ -45,8 +45,6 @@ void organizarCategorias(){
 	char linea[1000] = {0};
 	char final[1000] = {0};
 	FILE * libro;
-	mkdir("categorias",0777);
-	char dirCategorias[] = "categorias/";
 	char dirLibro[] = "libros/";
 	
 	struct dirent *de;
@@ -63,7 +61,7 @@ void organizarCategorias(){
 		fgets(linea,1000,libro);
 		fgets(linea,1000,libro);
 		strtok(linea,"\n");
-		sprintf(categoria,"%s%s",dirCategorias,linea);
+		sprintf(categoria,"%s%s",dirLibro,linea);
 		if (stat(categoria, &verificar) == -1) {
 			mkdir(categoria, 0700);
 		}
@@ -74,14 +72,13 @@ void organizarCategorias(){
 	}
 
 	closedir(dr);  
-	remove("libros");
 
 }
 
 void organizarAutores(){
 	struct stat verificar = {0};
 	FILE * libro;
-	char dirCategorias[] = "categorias/";
+	char dirCategorias[] = "libros/";
 	char dirLibro[1000] = {0};
 	char autor[1000] = {0};
 	char linea[1000] = {0};
@@ -89,7 +86,7 @@ void organizarAutores(){
 	char carpeta_cat[1000] = {0};
 	struct dirent *de;
 	struct dirent *de_2;
-	DIR *dr = opendir("categorias");
+	DIR *dr = opendir("libros/");
 	while ((de = readdir(dr)) != NULL){
 		if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
 			continue;
@@ -114,17 +111,71 @@ void organizarAutores(){
 
 			rename(dirLibro,final);
 		}
-
 		closedir(dr_2);
 	}
 	closedir(dr);
 }
 
+void ordenarPorNota(){
+	int nota;
+	struct stat verificar = {0};
+	FILE * libro;
+	char dirLibro[1000] = {0};
+	char dirFinal[1000] = {0};
+	char dirCategorias[] = "libros/";
+	struct dirent *de;
+	struct dirent *de_2;
+	struct dirent *de_3;
+	char carpeta_cat[1000] = {0};
+	char linea[1000] = {0};
+	char nombre_final[100] = {0};
+	char DirFinalFinal[1000] = {0};
+	DIR *dr = opendir("libros");
+	while ((de = readdir(dr)) != NULL){
+		if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
+			continue;
+		sprintf(carpeta_cat,"%s%s",dirCategorias,de->d_name); // carpeta_cat = "libros/categoria i"
+		DIR *dr_2 = opendir(carpeta_cat);
+		while ((de_2 = readdir(dr_2)) != NULL){
+			if (strcmp(de_2->d_name, ".") == 0 || strcmp(de_2->d_name, "..") == 0)
+				continue;
+			sprintf(dirLibro,"%s/%s",carpeta_cat,de_2->d_name); //dirLibro = "libros/categoria i/autor x"  de_2->name = autor x
+			DIR *dr_3 = opendir(dirLibro);
+			int cant_libros = 0;
+			int suma = 0;
+			int promedio;
+			while ((de_3 = readdir(dr_3)) != NULL){
+
+				if (strcmp(de_3->d_name, ".") == 0 || strcmp(de_3->d_name, "..") == 0)
+					continue;
+				sprintf(dirFinal,"%s/%s",dirLibro,de_3->d_name); //dirFinal = "categoria i/autor x/libro x.txt"
+				libro = fopen(dirFinal,"r");
+				fgets(linea,100,libro);
+				fgets(linea,100,libro);
+				fgets(linea,100,libro);
+				fgets(linea,100,libro);
+				fscanf(libro,"%d",&nota);
+				suma += nota;
+				cant_libros+=1;
+				fclose(libro);
+		    }
+		    printf("%d\n",suma);
+		    promedio = 11 - (suma/cant_libros);
+		    sprintf(nombre_final,"%d. %s",promedio,de_2->d_name);
+		    sprintf(DirFinalFinal,"%s/%s",carpeta_cat,nombre_final);
+		    rename(dirLibro,DirFinalFinal);
+		    closedir(dr_3);
+		}
+		closedir(dr_2);
+	}
+	closedir(dr);
+}
 
 int main(){
 	crearLibros();	
 	organizarCategorias();
 	organizarAutores();
+	ordenarPorNota();
 
 	return 0;
 }
