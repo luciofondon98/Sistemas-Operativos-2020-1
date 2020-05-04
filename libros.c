@@ -16,28 +16,28 @@ void crearLibros(){
 	srand(time(NULL));
 
 	for (int i = 0; i < 100; i++){
-		mkdir("libros",0700);
-		char dirLibro[] = "libros/";
-		char nombre_libro[20],autor[50],categoria[50], calificacion[5];
-		int autor_int,fecha,nota,categoria_int;
+		mkdir("Libros",0700);
+		char dirLibro[] = "Libros/";
+		char nombre_libro[20],calificacion[5];
+		int fecha,nota;
 		FILE *libro;
-		sprintf(nombre_libro,"%slibro %d.txt",dirLibro,i);
+		sprintf(nombre_libro,"%sLibro %d.txt",dirLibro,i);
 
-		autor_int = (rand() % 7);
+		char autores[10][30] = {"Anuel AA","Ozuna","J Balvin","Arturo Vidal","Diego Arroyuelo","Mauricio Solar","HAR","Claudio Lobos","Juan Bahamondes","Bad Bunny"};
+		char categorias[6][30] = {"Ciencia Ficción","Aventura","Drama","Terror","Fantasía","Cuento"};
+		
 		fecha = (rand() % 30)+1990; // año aleatorio entre 1990 - 2020
 		nota = (rand() % 10);
-		categoria_int = (rand() % 7);
-		sprintf(autor,"autor %d",autor_int);
+
 		sprintf(calificacion,"%d/10",nota);
-		sprintf(categoria,"categoria %d",categoria_int);
 
 		libro = fopen(nombre_libro,"w");
 
-		sprintf(nombre_libro,"libro %d",i);
+		sprintf(nombre_libro,"Libro %d",i);
 
 		fprintf(libro,"%s\n",nombre_libro);
-		fprintf(libro,"%s\n",autor);
-		fprintf(libro,"%s\n",categoria);
+		fprintf(libro,"%s\n",autores[rand() % 10]);
+		fprintf(libro,"%s\n",categorias[rand() % 6]);
 		fprintf(libro,"%i\n",fecha);
 		fprintf(libro,"%s\n",calificacion);
 		fclose(libro);
@@ -45,20 +45,14 @@ void crearLibros(){
 }
 
 void ordenarCategoriasAutores(){
-	char cat_final[100];
-
-
 	struct stat verificar = {0};
-	char linea[1000] = {0};
-	char dirLibro[1000] = {0}, dirCategoria[1000];
+	char linea[1000] = {0}, dirLibro[1000] = {0}, dirCategoria[1000], dirFinal[1000] = {0}, dirInicial[] = "Libros/", dirAutor[300] = {0}, cat_final[100];
 	FILE * libro;
-	char dirInicial[] = "libros/";
-	char dirFinal[1000] = {0};
+
 	struct dirent *de;
 	struct dirent *de_2;
 
-	char dirAutor[100] = {0};
-	DIR *dr = opendir("libros"); 
+	DIR *dr = opendir("Libros"); 
 	DIR *dr_2;
 
 	while ((de = readdir(dr)) != NULL){
@@ -83,9 +77,8 @@ void ordenarCategoriasAutores(){
 
 	//de aqui en adelante se busca categoria con libros mas escritos
 	
-	dr = opendir("libros"); 
+	dr = opendir("Libros"); 
 
-	int cant_categorias;
 	while ((de = readdir(dr)) != NULL){
 		if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
 			continue;
@@ -134,11 +127,11 @@ void ordenarCategoriasAutores(){
 				}
 			}
 		}
-		sprintf(dirCategoria,"libros/%s",cat_final);
+		sprintf(dirCategoria,"Libros/%s",cat_final);
 		if (stat(dirCategoria, &verificar) == -1) {
 			mkdir(dirCategoria, 0700);
 		}
-		sprintf(dirFinal,"libros/%s/%s",cat_final,de->d_name); //dirAutor = "libros/autor x" dirFinal = "libros/categoria y/autor x"
+		sprintf(dirFinal,"Libros/%s/%s",cat_final,de->d_name); //dirAutor = "libros/autor x" dirFinal = "libros/categoria y/autor x"
 		rename(dirAutor,dirFinal);
 		closedir(dr_2);
 	}
@@ -148,17 +141,13 @@ void ordenarCategoriasAutores(){
 void ordenarPorNota(){
 	int nota;
 	FILE * libro;
-	char dirAutor[1000] = {0};
-	char dirLibro[1000] = {0};
-	char dirInicial[] = "libros/";
+	char dirAutor[1000] = {0}, dirLibro[1000] = {0}, dirInicial[] = "Libros/", carpeta_cat[1000] = {0}, linea[1000] = {0}, nombre_final[300] = {0}, dirFinal[1000] = {0};
+
 	struct dirent *de;
 	struct dirent *de_2;
 	struct dirent *de_3;
-	char carpeta_cat[1000] = {0};
-	char linea[1000] = {0};
-	char nombre_final[100] = {0};
-	char dirFinal[1000] = {0};
-	DIR *dr = opendir("libros");
+
+	DIR *dr = opendir("Libros");
 	while ((de = readdir(dr)) != NULL){
 		if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
 			continue;
@@ -198,17 +187,12 @@ void ordenarPorNota(){
 }
 
 void opcionUno(){
-	char dirCategorias[] = "libros/";
-	char dirLibro[1000] = {0};
-	char dirAutores[1000] = {0};
-	char dirFinal[1000] = {0};
-
-	char linea[1000] = {0};
-	char aux[100] = {0};
+	char dirCategorias[] = "Libros/", dirLibro[1000] = {0}, dirAutores[1000] = {0}, dirFinal[1000] = {0}, linea[1000] = {0}, aux[100] = {0};
 
 	struct dirent *de;
-	DIR *dr = opendir("libros/");
+	DIR *dr = opendir("Libros/");
 	printf("Las categorías son las siguientes:\n");
+
 	while ((de = readdir(dr)) != NULL){
 		if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
 			continue;
@@ -224,7 +208,7 @@ void opcionUno(){
 	while(1){
 		fgets (categoria, 100, stdin);
 		strtok(categoria,"\n");	
-		dr = opendir("libros/");
+		dr = opendir("Libros/");
 		while ((de = readdir(dr)) != NULL){
 			if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
 				continue;
@@ -329,7 +313,7 @@ void opcionDos(){
 	char linea[1000];
 	char arreglo[100][100];
 	struct dirent *de;
-	DIR *dr = opendir("libros/");
+	DIR *dr = opendir("Libros/");
 	while ((de = readdir(dr)) != NULL){
 		if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
 			continue;
@@ -337,7 +321,7 @@ void opcionDos(){
 		i++;
 	}
 	closedir(dr);
-	sprintf(categoria_rand,"libros/%s",arreglo[rand() % i]);
+	sprintf(categoria_rand,"Libros/%s",arreglo[rand() % i]);
 
 	i = 0;
 	dr = opendir(categoria_rand);
@@ -387,7 +371,7 @@ void opcionTres(){
 	char categoria[100];
 	char arreglo[100][100];
 	struct dirent *de;
-	DIR *dr = opendir("libros/");
+	DIR *dr = opendir("Libros/");
 	printf("Las categorías son las siguientes:\n");
 	while ((de = readdir(dr)) != NULL){
 		if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
@@ -397,13 +381,11 @@ void opcionTres(){
 
 	closedir(dr);
 
-	printf("Ingrese la categoría que quiere revisar:\n");
-
 	int flag = 1;
 	while(1){
 		fgets (categoria, 100, stdin);
 		strtok(categoria,"\n");	
-		dr = opendir("libros/");
+		dr = opendir("Libros/");
 		while ((de = readdir(dr)) != NULL){
 			if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
 				continue;
@@ -417,7 +399,7 @@ void opcionTres(){
 	}
 	closedir(dr);
 
-	sprintf(dirCategoria,"libros/%s",categoria);
+	sprintf(dirCategoria,"Libros/%s",categoria);
 
 
 	i = 0;
@@ -454,42 +436,4 @@ void opcionTres(){
 	fgets(linea,100,libro);
 	printf("Nota: %s\n",linea);
 	fclose(libro);
-}
-
-int main(){
-	crearLibros();	
-	ordenarCategoriasAutores();
-	ordenarPorNota();
-	int opcion;
-
-	while(1){
-		printf("\n-----BIENVENIDO AL ORGANIZADOR DE LIBROS XD------\n\n");
-		printf("¿Qué deseas realizar?\n");
-		printf("1)Consultar información de algún libro\n");
-		printf("2)Recomendarte un libro al azar\n");
-		printf("3)Recomendarte un libro por categoria\n");
-		printf("4)Salir\n");
-
-		scanf("%d", &opcion);
-		getchar();
-		if(opcion == 1){
-			opcionUno();
-		}	
-		else if(opcion == 2){
-			opcionDos();
-		}
-		
-		else if(opcion == 3){
-			opcionTres();
-		}
-		
-		else if(opcion == 4){
-			break;
-		}
-
-		else{
-			printf("Haz escogido una opción incorrecta\n");
-		}
-	}
-	return 0;
 }
