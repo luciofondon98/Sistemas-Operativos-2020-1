@@ -15,7 +15,7 @@ typedef struct{
 void crearLibros(){	
 	srand(time(NULL));
 
-	for (int i = 0; i < 100; i++){
+	for (int i = 0; i < 50; i++){
 		mkdir("Libros",0700);
 		char dirLibro[] = "Libros/";
 		char nombre_libro[20],calificacion[5];
@@ -23,7 +23,7 @@ void crearLibros(){
 		FILE *libro;
 		sprintf(nombre_libro,"%sLibro %d.txt",dirLibro,i);
 
-		char autores[10][30] = {"Anuel AA","Ozuna","J Balvin","Arturo Vidal","Diego Arroyuelo","Mauricio Solar","HAR","Claudio Lobos","Juan Bahamondes","Bad Bunny"};
+		char autores[15][30] = {"Anuel AA","Ozuna","J Balvin","Arturo Vidal","Diego Arroyuelo","Mauricio Solar","HAR","Claudio Lobos","Juan Bahamondes","Bad Bunny","Daddy Yankee","Viktor Tapia","Maluma","Karol G","Nicky Jam"};
 		char categorias[6][30] = {"Ciencia Ficción","Aventura","Drama","Terror","Fantasía","Cuento"};
 		
 		fecha = (rand() % 30)+1990; // año aleatorio entre 1990 - 2020
@@ -36,7 +36,7 @@ void crearLibros(){
 		sprintf(nombre_libro,"Libro %d",i);
 
 		fprintf(libro,"%s\n",nombre_libro);
-		fprintf(libro,"%s\n",autores[rand() % 10]);
+		fprintf(libro,"%s\n",autores[rand() % 15]);
 		fprintf(libro,"%s\n",categorias[rand() % 6]);
 		fprintf(libro,"%i\n",fecha);
 		fprintf(libro,"%s\n",calificacion);
@@ -422,9 +422,23 @@ void opcionTres(){
 		i++;
 	}
 	closedir(dr);
-	sprintf(libro_rand,"%s/%s",autor_rand,arreglo[rand() % i]);
 
-	FILE * libro = fopen(libro_rand,"r");
+	FILE * libro;
+
+	while(1){
+		sprintf(libro_rand,"%s/%s",autor_rand,arreglo[rand() % i]);
+		libro = fopen(libro_rand,"r");
+		fgets(linea,100,libro);
+		fgets(linea,100,libro);
+		fgets(linea,100,libro);
+		strtok(linea,"\n");
+		if(strcmp(categoria,linea) == 0){
+			break;
+			fclose(libro);
+		}
+
+	}
+	libro = fopen(libro_rand,"r");
 	fgets(linea,100,libro);
 	printf("\n\nTítulo del libro: %s\n",linea);
 	fgets(linea,100,libro);
