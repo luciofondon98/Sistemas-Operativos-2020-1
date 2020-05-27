@@ -24,8 +24,26 @@ int ** crearTablero(){
 				tablero[i][j] = 0;
 			}
 	}
-
 	return tablero;
+}
+
+void decrementarIteraciones(int ** tablero){
+	int i,j;
+	for (i = 0; i < 5; i++){
+			for(j = 0; j < 5; j++){
+				if (tablero[i][j] > 0){
+					tablero[i][j]--;
+				}
+			}
+	}
+}
+
+void golpearTopo(int ** tablero, int x, int y){
+	if(tablero[x][y] > 0){
+		printf("Golpeaste al topo en la posición (%d,%d)!\n",x+1, y+1);
+		tablero[x][y] = 0;
+	}
+	else printf("Fallaste!\n");
 }
 
 int main(){
@@ -33,10 +51,17 @@ int main(){
 	srand(time(NULL));
 	int fd12[2];
 	int fd23[2];
-	int fd3p[2];  //creación de pipes
+	int fd3p[2];  
+	int fdp1[2];
+	int fdp2[2];
+	int fdp3[2];
+	
 	pipe(fd12);
 	pipe(fd23);
-	pipe(fd3p);
+	pipe(fd3p); //creación de pipes
+	pipe(fdp1);
+	pipe(fdp2);
+	pipe(fdp3);
 
 	int pid, id_P, id_H1, id_H2, id_H3;
 	id_P = getpid();
@@ -53,12 +78,10 @@ int main(){
 	}
 	else id_H1 = getpid();
 
-	//printf("%d %d %d %d %d\n",id_P, id_H1, id_H2, id_H3, getppid());
-
-
 	int ** tablero = crearTablero();
 
 	pid = getpid();
+	int rondas = 3; //número de iteraciones del juego
 
 	if(pid == id_H1){
 		close(fd12[0]);
@@ -69,11 +92,23 @@ int main(){
 		close(fd3p[0]);
 		close(fd3p[1]);
 		
-		//cantidad de topos por ronda
-		int cant_topos = (rand() % 4); //rango de 0 a 3, no incluye al 4
-		write(fd12[1],&cant_topos,sizeof(int));
+		close(fdp1[1]);
 
-		close(fd12[1]); //cierro modo escritura de hijo 1 a 2, ya que ya envié los datos
+		close(fdp2[0]);
+		close(fdp2[1]);
+		close(fdp3[0]);
+		close(fdp3[1]);
+		
+		int mensaje = 1;
+		while(1){		
+			if(mensaje == 0){
+				break;
+			}
+			int cant_topos = (rand() % 6); //rango de 0 a 3, no incluye al 4
+			write(fd12[1],&cant_topos,sizeof(int));
+
+			read(fdp1[0],&mensaje,sizeof(int)); //espera señal del padre para que comience de nuevo o termine
+		}	
 	}
 
 	if(pid == id_H2){
@@ -82,22 +117,31 @@ int main(){
 		close(fd3p[0]);
 		close(fd3p[1]);
 		
+		close(fdp1[0]);
+		close(fdp1[1]);
+		close(fdp2[1]);
+		close(fdp3[0]);
+		close(fdp3[1]);
 		int cant;
-		read(fd12[0],&cant,sizeof(int));
-		printf("Cantidad de topos: %d\n",cant);
-		close(fd12[0]); //cierro modo lectura de hijo 1 a 2
+		int mensaje = 1;
+		while(1){
+			if(mensaje == 0){
+				break;
+			}
 
-		topo * arreglo_topos = (topo*)malloc(sizeof(topo)*cant);
+			read(fd12[0],&cant,sizeof(int));
 
-		//cantidad de iteraciones de cada topo
-		for (int i = 0; i < cant; i++){
-			arreglo_topos[i].iteraciones = (rand() % 3) + 1; //rango de 1 a 3 iteraciones
-			//printf("Iteración topo %d: %d\n",i+1,arreglo_topos[i].iteraciones); //topos e iteraciones de cada uno guardada en los arreglos
+			topo * arreglo_topos = (topo*)malloc(sizeof(topo)*cant);
+
+			//cantidad de iteraciones de cada topo
+			for (int i = 0; i < cant; i++){
+				arreglo_topos[i].iteraciones = (rand() % 3) + 1; //rango de 1 a 3 iteraciones
+			}
+
+			close(fd23[0]); //cierro modo lectura de hijo 2 a 3, ya que hijo 2 escribe datos a hijo 3, no lee
+			write(fd23[1],arreglo_topos,sizeof(topo)*cant + 1);
+			read(fdp2[0],&mensaje,sizeof(int));
 		}
-
-		close(fd23[0]); //cierro modo lectura de hijo 2 a 3, ya que hijo 2 escribe datos a hijo 3, no lee
-		write(fd23[1],arreglo_topos,sizeof(topo)*cant + 1);
-		close(fd23[1]); //cierro modo escritura de hijo 2 a 3, ya que ya envié los datos
 	}	
 
 	if(pid == id_H3){
@@ -108,58 +152,113 @@ int main(){
 		close(fd12[0]);
 		close(fd12[1]);
 		
-		topo * arreglo_topos = (topo*)malloc(sizeof(topo)*3);
-		read(fd23[0],arreglo_topos,sizeof(topo)*3 + 1);
-		close(fd23[0]); //cierro modo lectura de hijo 2 a 3
+		close(fdp1[0]);
+		close(fdp1[1]);
+		close(fdp2[0]);
+		close(fdp2[1]);
+		close(fdp3[1]);
+		int mensaje = 1;
 
-		//coordenadas donde aparecerán los topos
-		int x, y;
-		for (int i = 0; i < 3; i++){
-			if (arreglo_topos[i].iteraciones == 0) break;
-			x = (rand() % 5);
-			y = (rand() % 5);
-			arreglo_topos[i].x = x;
-			arreglo_topos[i].y = y;
+		while(1){
+			if(mensaje == 0){
+				break;
+			}
+
+			topo * arreglo_topos = (topo*)malloc(sizeof(topo)*5);
+			read(fd23[0],arreglo_topos,sizeof(topo)*5 + 1);
+
+			//coordenadas donde aparecerán los topos
+			int x, y;
+			for (int i = 0; i < 5; i++){
+				if (arreglo_topos[i].iteraciones == 0) break;
+				x = (rand() % 5);
+				y = (rand() % 5);
+				arreglo_topos[i].x = x;
+				arreglo_topos[i].y = y;
+			}
+
+			write(fd3p[1],arreglo_topos,sizeof(topo)*5 + 1);
+			read(fdp3[0],&mensaje,sizeof(int));
 		}
-
-		write(fd3p[1],arreglo_topos,sizeof(topo)*3 + 1);
-		close(fd3p[1]); //cierro modo escritura de hijo 3 a padre, ya que ya envié los datos
 	}
 
 	if(pid == id_P){
+		//primero cerrar todos los pipes que no se utilizan
+		close(fd12[0]);
+		close(fd12[1]);
 		close(fd23[0]);
 		close(fd23[1]);
 
-		close(fd12[0]);
-		close(fd12[1]);
-		
 		close(fd3p[1]);
 
-		topo * arreglo_topos = (topo*)malloc(sizeof(topo)*3);
-		read(fd3p[0],arreglo_topos,sizeof(topo)*3 + 1); //tenemos todos los datos para trabajar ya
-		close(fd3p[0]); //cierro modo lectura de hijo 2 a 3
+		close(fdp1[0]);
+		close(fdp2[0]);
+		close(fdp3[0]);
+		int opcion;
+
+		printf("Bienvenido a Golpea el Topo. ¿Qué deseas hacer?\n\n");
+		printf("1)Empezar el juego\n");
+		printf("2)Cerrar el programa\n");
 		
-		//se llena el tablero con el arreglo de los topos
-		for (int i = 0; i < 3; i++){
-			if (arreglo_topos[i].iteraciones == 0) break;
-			if (tablero[arreglo_topos[i].x][arreglo_topos[i].y] == 0){
-				tablero[arreglo_topos[i].x][arreglo_topos[i].y] = arreglo_topos[i].iteraciones;
+		scanf("%d", &opcion);
+		getchar();
+
+		int mensaje = 1;
+		if(opcion == 1){
+			while(1){
+				topo * arreglo_topos = (topo*)malloc(sizeof(topo)*5);
+				read(fd3p[0],arreglo_topos,sizeof(topo)*5 + 1); //tenemos todos los datos para trabajar ya
+				
+				//se llena el tablero con el arreglo de los topos
+				int cant = 0;
+				for (int i = 0; i < 5; i++){
+					if (arreglo_topos[i].iteraciones == 0) break;
+					if (tablero[arreglo_topos[i].x][arreglo_topos[i].y] == 0){
+						tablero[arreglo_topos[i].x][arreglo_topos[i].y] = arreglo_topos[i].iteraciones;
+						cant++;
+					}
+				}
+
+				if (cant==1) printf("Ha salido %d topo!\n",cant);
+				else printf("Han salido %d topos!\n",cant);
+
+
+				for (int i = 0; i < 5; i++){
+					for (int j = 0; j < 5; j++){
+						printf("%d ", tablero[i][j]);
+					}
+					printf("\n");
+
+				}
+
+				printf("\n");
+				sleep(5);
+
+				int rand_x = (rand() % 5), rand_y = (rand() % 5);
+				golpearTopo(tablero,rand_x,rand_y);
+				decrementarIteraciones(tablero);
+				rondas--;
+
+				if (rondas == 0){
+					mensaje = 0;
+					write(fdp1[1],&mensaje,sizeof(int));
+					write(fdp2[1],&mensaje,sizeof(int));
+					write(fdp3[1],&mensaje,sizeof(int));
+					printf("Fin del juego, Adios!\n");
+					break;
+				}
+				write(fdp1[1],&mensaje,sizeof(int));
+				write(fdp2[1],&mensaje,sizeof(int));
+				write(fdp3[1],&mensaje,sizeof(int));
+
 			}
-			printf("Iteración topo %d: %d\n",i+1,arreglo_topos[i].iteraciones);
-			printf("%d %d\n",arreglo_topos[i].x,arreglo_topos[i].y); //coordenadas guardadas
+
+		}
+		else{
+			exit(1);
 		}
 
-		for (int i = 0; i < 5; i++){
-			for (int j = 0; j < 5; j++){
-				printf("%d ", tablero[i][j]);
-			}
-			printf("\n");
-
-		}
 	}
-
-
-	
 
 	return 0;
 }
