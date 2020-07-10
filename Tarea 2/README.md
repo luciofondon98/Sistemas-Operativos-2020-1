@@ -14,7 +14,7 @@ Rol: 201773610-0
 	3) `main.c`: Codigo donde se define la funcion main en donde se utilizan las funciones importadas por
 		`topos.h`
 
-	`makefile`: Archivo que contiene las reglas de compilacion.
+	4) `makefile`: Archivo que contiene las reglas de compilacion.
 
 4) Una vez abierta la carpeta en la terminal, se deben realizar los siguientes pasos para compilar los archivos:
 
