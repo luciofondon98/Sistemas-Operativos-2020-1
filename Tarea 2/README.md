@@ -5,7 +5,7 @@ Rol: 201773610-0
 # Instrucciones para utilizar la tarea
 1) Instalar gcc
 2) Abrir la terminal y entrar a la ubicación de la carpeta con los archivos en cuestión.
-3) La carpeta debe contener 5 archivos, los cuales deben tener si o si los siguientes nombres:
+3) La carpeta debe contener 4 archivos, los cuales deben tener si o si los siguientes nombres:
 
 	1) `topos.h`: Header con las funciones de `topos.c`.
 
