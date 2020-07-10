@@ -9,13 +9,13 @@ Rol: 201773610-0
 
 2) Para ejecutar cada problema, situarse dentro de su respectiva carpeta.
 3) Las carpetas deben contener 2 archivos cada una, los cuales son:
-	1) Parte 1:
-		`Parte1.java`: Código principal que resuelve el problema sin hebras.
-		makefile: Archivo que contiene las reglas de compilacion.
+	1) #### Parte 1:
+		- `Parte1.java`: Código principal que resuelve el problema sin hebras.
+		- `makefile`: Archivo que contiene las reglas de compilación.
 
-	2) Parte 2:
-		`Hebra.java`: Código principal que resuelve el problema con implementación de hebras.
-		makefile: Archivo que contiene las reglas de compilacion.
+	2) #### Parte 2:
+		- `Hebra.java`: Código principal que resuelve el problema con implementación de hebras.
+		- `makefile`: Archivo que contiene las reglas de compilación.
 
 4) Una vez abierta la carpeta en la terminal, se deben realizar los siguientes pasos para compilar los archivos:
 
